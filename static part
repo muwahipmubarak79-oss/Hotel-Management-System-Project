@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GrandVista Hotel - Management System</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --accent: #3b82f6;
+      --success: #10b981;
+      --danger: #ef4444;
+      --light: #f8fafc;
+      --dark: #1e2937;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #f1f5f9, #e0f2fe);
+      color: #333;
+      line-height: 1.6;
+    }
+
+    .header {
+      background: var(--primary);
+      color: white;
+      padding: 1.5rem 2rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    .logo {
+      font-size: 1.8rem;
+      font-weight: bold;
+    }
+
+    .nav {
+      display: flex;
+      gap: 2rem;
+    }
+
+    .nav a {
+      color: white;
+      text-decoration: none;
+      font-weight: 500;
+      transition: 0.3s;
+    }
+
+    .nav a:hover {
+      color: var(--accent);
+    }
+
+    .container {
+      display: flex;
+      min-height: calc(100vh - 80px);
+    }
+
+    .sidebar {
+      width: 260px;
+      background: white;
+      padding: 2rem 1rem;
+      box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    }
+
+    .sidebar-menu {
+      list-style: none;
+    }
+
+    .sidebar-menu li {
+      padding: 14px 20px;
+      margin: 8px 0;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .sidebar-menu li:hover,
+    .sidebar-menu li.active {
+      background: var(--accent);
+      color: white;
+    }
+
+    .main-content {
+      flex: 1;
+      padding: 2rem;
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 1.8rem;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+      transition: transform 0.3s;
+    }
+
+    .card:hover {
+      transform: translateY(-8px);
+    }
+
+    .card h3 {
+      color: #64748b;
+      font-size: 1.1rem;
+      margin-bottom: 1rem;
+    }
+
+    .card .number {
+      font-size: 2.5rem;
+      font-weight: bold;
+      color: var(--primary);
+    }
+
+    .section {
+      display: none;
+    }
+
+    .section.active {
+      display: block;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+    }
+
+    th, td {
+      padding: 14px 16px;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+    }
+
+    th {
+      background: var(--primary);
+      color: white;
+    }
+
+    tr:hover {
+      background: #f8fafc;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: 0.3s;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .btn-success {
+      background: var(--success);
+      color: white;
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: white;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.6);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 2rem;
+      border-radius: 16px;
+      width: 90%;
+      max-width: 500px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+
+    .status {
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .status.available { background: #d1fae5; color: #10b981; }
+    .status.occupied { background: #fee2e2; color: #ef4444; }
+    .status.reserved { background: #fef3c7; color: #d97706; }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="logo">
+      <i class="fas fa-hotel"></i> GrandVista
+    </div>
+    <div class="nav">
+      <a href="#" onclick="showSection('dashboard')"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+      <a href="#" onclick="showSection('rooms')"><i class="fas fa-bed"></i> Rooms</a>
+      <a href="#" onclick="showSection('bookings')"><i class="fas fa-calendar-check"></i> Bookings</a>
+      <a href="#" onclick="showSection('guests')"><i class="fas fa-users"></i> Guests</a>
+    </div>
+    <div>
+      <i class="fas fa-user-circle" style="font-size: 1.8rem;"></i>
+    </div>
+  </header>
+
+  <div class="container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <ul class="sidebar-menu">
+        <li class="active" onclick="showSection('dashboard')"><i class="fas fa-home"></i> Dashboard</li>
+        <li onclick="showSection('rooms')"><i class="fas fa-bed"></i> Room Management</li>
+        <li onclick="showSection('bookings')"><i class="fas fa-calendar-alt"></i> Reservations</li>
+        <li onclick="showSection('guests')"><i class="fas fa-user-friends"></i> Guests</li>
+        <li onclick="showSection('staff')"><i class="fas fa-users-cog"></i> Staff</li>
+        <li onclick="showSection('reports')"><i class="fas fa-chart-bar"></i> Reports</li>
+      </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+      <!-- Dashboard Section -->
+      <div id="dashboard" class="section active">
+        <h1>Welcome to GrandVista Hotel</h1>
+        <p style="color: #64748b; margin-bottom: 2rem;">Hotel Management Dashboard</p>
+
+        <div class="dashboard-grid">
+          <div class="card">
+            <h3>Occupied Rooms</h3>
+            <div class="number" id="occupied">24</div>
+            <p style="color: var(--danger);">out of 85 total rooms</p>
+          </div>
+          <div class="card">
+            <h3>Today's Check-ins</h3>
+            <div class="number" id="checkins">12</div>
+            <p style="color: var(--success);">Guests arriving today</p>
+          </div>
+          <div class="card">
+            <h3>Today's Check-outs</h3>
+            <div class="number" id="checkouts">8</div>
+            <p style="color: var(--accent);">Guests departing today</p>
+          </div>
+          <div class="card">
+            <h3>Revenue This Month</h3>
+            <div class="number">$48,920</div>
+            <p style="color: var(--success);">↑ 12% from last month</p>
+          </div>
+        </div>
+
+        <h2 style="margin: 2rem 0 1rem;">Recent Bookings</h2>
+        <table id="recentBookings">
+          <thead>
+            <tr>
+              <th>Guest</th>
+              <th>Room</th>
+              <th>Check-in</th>
+              <th>Check-out</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <!-- Rooms Section -->
+      <div id="rooms" class="section">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+          <h1>Room Management</h1>
+          <button class="btn btn-primary" onclick="showAddRoomModal()">Add New Room</button>
+        </div>
+
+        <table id="roomsTable">
+          <thead>
+            <tr>
+              <th>Room No</th>
+              <th>Type</th>
+              <th>Price/Night</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <!-- Bookings Section -->
+      <div id="bookings" class="section">
+        <h1>Reservations</h1>
+        <button class="btn btn-success" style="margin-bottom: 1rem;" onclick="showNewBookingModal()">
+          <i class="fas fa-plus"></i> New Reservation
+        </button>
+        <table id="bookingsTable">
+          <thead>
+            <tr>
+              <th>Booking ID</th>
+              <th>Guest Name</th>
+              <th>Room</th>
+              <th>Check-in</th>
+              <th>Check-out</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <!-- Guests Section -->
+      <div id="guests" class="section">
+        <h1>Guest Directory</h1>
+        <table id="guestsTable">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>Total Stays</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Add Room Modal -->
+  <div id="addRoomModal" class="modal">
+    <div class="modal-content">
+      <h2>Add New Room</h2>
+      <input type="text" id="roomNumber" placeholder="Room Number (e.g. 101)">
+      <select id="roomType">
+        <option value="">Select Room Type</option>
+        <option value="Deluxe">Deluxe</option>
+        <option value="Suite">Suite</option>
+        <option value="Standard">Standard</option>
+        <option value="Family">Family</option>
+      </select>
+      <input type="number" id="roomPrice" placeholder="Price per Night">
+      <div style="margin-top: 1rem;">
+        <button class="btn btn-success" onclick="addRoom()">Add Room</button>
+        <button class="btn btn-danger" onclick="closeModal('addRoomModal')">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- New Booking Modal -->
+  <div id="newBookingModal" class="modal">
+    <div class="modal-content">
+      <h2>New Reservation</h2>
+      <input type="text" id="guestName" placeholder="Guest Full Name">
+      <select id="bookingRoom"></select>
+      <input type="date" id="checkInDate">
+      <input type="date" id="checkOutDate">
+      <div style="margin-top: 1rem;">
+        <button class="btn btn-success" onclick="createBooking()">Confirm Booking</button>
+        <button class="btn btn-danger" onclick="closeModal('newBookingModal')">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Sample Data
+    let rooms = [
+      { id: 1, number: "101", type: "Deluxe", price: 120, status: "available" },
+      { id: 2, number: "102", type: "Standard", price: 85, status: "occupied" },
+      { id: 3, number: "201", type: "Suite", price: 250, status: "reserved" },
+      { id: 4, number: "305", type: "Family", price: 180, status: "available" }
+    ];
+
+    let bookings = [
+      { id: "BK001", guest: "Emma Thompson", room: "102", checkin: "2026-04-26", checkout: "2026-04-30", status: "confirmed" },
+      { id: "BK002", guest: "Michael Chen", room: "201", checkin: "2026-04-28", checkout: "2026-05-03", status: "confirmed" }
+    ];
+
+    let guests = [
+      { id: "G001", name: "Emma Thompson", email: "emma.t@email.com", phone: "+1 555-1234", stays: 5 },
+      { id: "G002", name: "Michael Chen", email: "mchen@email.com", phone: "+1 555-5678", stays: 2 }
+    ];
+
+    // Render Functions
+    function renderRooms() {
+      const tbody = document.querySelector('#roomsTable tbody');
+      tbody.innerHTML = '';
+      rooms.forEach(room => {
+        const statusClass = room.status === 'available' ? 'available' : room.status === 'occupied' ? 'occupied' : 'reserved';
+        tbody.innerHTML += `
+          <tr>
+            <td><strong>${room.number}</strong></td>
+            <td>${room.type}</td>
+            <td>$${room.price}</td>
+            <td><span class="status ${statusClass}">${room.status}</span></td>
+            <td>
+              <button class="btn btn-primary" style="padding: 6px 12px; font-size: 0.9rem;" onclick="editRoom(${room.id})">Edit</button>
+              <button class="btn btn-danger" style="padding: 6px 12px; font-size: 0.9rem;" onclick="deleteRoom(${room.id})">Delete</button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    function renderBookings() {
+      const tbody = document.querySelector('#bookingsTable tbody');
+      tbody.innerHTML = '';
+      bookings.forEach(booking => {
+        tbody.innerHTML += `
+          <tr>
+            <td>${booking.id}</td>
+            <td>${booking.guest}</td>
+            <td>Room ${booking.room}</td>
+            <td>${booking.checkin}</td>
+            <td>${booking.checkout}</td>
+            <td><span class="status available">${booking.status}</span></td>
+            <td>
+              <button class="btn btn-danger" style="padding: 6px 12px;" onclick="cancelBooking('${booking.id}')">Cancel</button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    function renderRecentBookings() {
+      const tbody = document.querySelector('#recentBookings tbody');
+      tbody.innerHTML = '';
+      bookings.slice(0, 5).forEach(booking => {
+        tbody.innerHTML += `
+          <tr>
+            <td>${booking.guest}</td>
+            <td>Room ${booking.room}</td>
+            <td>${booking.checkin}</td>
+            <td>${booking.checkout}</td>
+            <td><span class="status available">${booking.status}</span></td>
+          </tr>
+        `;
+      });
+    }
+
+    function renderGuests() {
+      const tbody = document.querySelector('#guestsTable tbody');
+      tbody.innerHTML = '';
+      guests.forEach(guest => {
+        tbody.innerHTML += `
+          <tr>
+            <td>${guest.id}</td>
+            <td>${guest.name}</td>
+            <td>${guest.email}</td>
+            <td>${guest.phone}</td>
+            <td>${guest.stays}</td>
+            <td><button class="btn btn-primary">View</button></td>
+          </tr>
+        `;
+      });
+    }
+
+    // Section Navigation
+    function showSection(sectionId) {
+      document.querySelectorAll('.section').forEach(section => {
+        section.classList.remove('active');
+      });
+      document.getElementById(sectionId).classList.add('active');
+
+      // Update active sidebar item
+      document.querySelectorAll('.sidebar-menu li').forEach(li => {
+        li.classList.remove('active');
+        if (li.textContent.includes(sectionId.charAt(0).toUpperCase() + sectionId.slice(1))) {
+          li.classList.add('active');
+        }
+      });
+    }
+
+    // Modal Functions
+    function showAddRoomModal() {
+      document.getElementById('addRoomModal').style.display = 'flex';
+    }
+
+    function showNewBookingModal() {
+      const roomSelect = document.getElementById('bookingRoom');
+      roomSelect.innerHTML = '<option value="">Select Room</option>';
+      rooms.forEach(room => {
+        if (room.status === 'available') {
+          roomSelect.innerHTML += `<option value="${room.number}">${room.number} - ${room.type} ($${room.price})</option>`;
+        }
+      });
+      document.getElementById('newBookingModal').style.display = 'flex';
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).style.display = 'none';
+    }
+
+    // CRUD Operations
+    function addRoom() {
+      const number = document.getElementById('roomNumber').value;
+      const type = document.getElementById('roomType').value;
+      const price = parseInt(document.getElementById('roomPrice').value);
+
+      if (!number || !type || !price) {
+        alert("Please fill all fields!");
+        return;
+      }
+
+      rooms.push({
+        id: rooms.length + 1,
+        number: number,
+        type: type,
+        price: price,
+        status: "available"
+      });
+
+      renderRooms();
+      closeModal('addRoomModal');
+      alert("Room added successfully!");
+    }
+
+    function deleteRoom(id) {
+      if (confirm("Delete this room?")) {
+        rooms = rooms.filter(room => room.id !== id);
+        renderRooms();
+      }
+    }
+
+    function createBooking() {
+      const guest = document.getElementById('guestName').value;
+      const room = document.getElementById('bookingRoom').value;
+      const checkin = document.getElementById('checkInDate').value;
+      const checkout = document.getElementById('checkOutDate').value;
+
+      if (!guest || !room || !checkin || !checkout) {
+        alert("Please fill all fields");
+        return;
+      }
+
+      bookings.push({
+        id: "BK" + String(bookings.length + 1001).slice(1),
+        guest: guest,
+        room: room,
+        checkin: checkin,
+        checkout: checkout,
+        status: "confirmed"
+      });
+
+      // Mark room as reserved
+      const roomObj = rooms.find(r => r.number === room);
+      if (roomObj) roomObj.status = "reserved";
+
+      renderBookings();
+      renderRooms();
+      closeModal('newBookingModal');
+      alert("Booking created successfully!");
+    }
+
+    function cancelBooking(id) {
+      if (confirm("Cancel this booking?")) {
+        bookings = bookings.filter(b => b.id !== id);
+        renderBookings();
+      }
+    }
+
+    function editRoom(id) {
+      alert("Edit functionality for Room #" + id + " would open here in a full system.");
+    }
+
+    // Initialize the system
+    function initializeSystem() {
+      renderRooms();
+      renderBookings();
+      renderRecentBookings();
+      renderGuests();
+
+      // Set current date for demo
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('checkInDate').value = today;
+      document.getElementById('checkOutDate').value = "2026-05-02";
+    }
+
+    // Start the application
+    window.onload = initializeSystem;
+  </script>
+</body>
+</html>
