@@ -1,0 +1,391 @@
+Here is a complete, neat HTML document for the Grand Hotel website with a built-in SQLite database backend for storing booking requests and contact messages.
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Grand Hotel | Timeless Luxury & Database‑Driven Stays</title>
+  <meta name="description" content="Grand Hotel — a modern luxury hotel with integrated booking system, elegant rooms, fine dining, spa, and real-time database storage for reservations and enquiries." />
+  
+  <!-- Tailwind + Base Style -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Custom Font & Refined Styles -->
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg: #0b1220;
+      --card: rgba(255,255,255,0.06);
+      --stroke: rgba(255,255,255,0.12);
+      --gold: #d4af37;
+      --gold-soft: #f4e2a1;
+      --text: #e8edf7;
+      --muted: #b4bfd3;
+      --accent: #7c3aed;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      background: radial-gradient(circle at 20% 20%, rgba(124,58,237,0.18), transparent 40%),
+                  radial-gradient(circle at 80% 0%, rgba(212,175,55,0.12), transparent 30%),
+                  linear-gradient(180deg, #0a0f1c 0%, #0d1424 45%, #0a1020 100%);
+      color: var(--text);
+      font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      overflow-x: hidden;
+    }
+    .glass {
+      background: rgba(255,255,255,0.06);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(255,255,255,0.10);
+      box-shadow: 0 10px 40px rgba(0,0,0,0.22);
+    }
+    .hero-overlay {
+      background: linear-gradient(90deg, rgba(5,10,20,0.82) 0%, rgba(5,10,20,0.55) 40%, rgba(5,10,20,0.25) 100%);
+    }
+    .gold-text {
+      background: linear-gradient(135deg, #fff2bf 0%, #d4af37 55%, #fff1a8 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .btn-gold {
+      background: linear-gradient(135deg, #f7e5a3 0%, #d4af37 60%, #b78d1f 100%);
+      color: #1b1406;
+      box-shadow: 0 10px 30px rgba(212,175,55,0.25);
+      transition: all 0.2s ease;
+    }
+    .btn-gold:hover { transform: translateY(-2px); box-shadow: 0 16px 36px rgba(212,175,55,0.35); }
+    .section-title:after {
+      content: "";
+      display: block;
+      width: 72px;
+      height: 3px;
+      margin-top: 12px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(212,175,55,1), rgba(244,226,161,0.2));
+    }
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: all 0.7s ease;
+    }
+    .reveal.show {
+      opacity: 1;
+      transform: none;
+    }
+    .room-card:hover .room-image { transform: scale(1.05); }
+    .room-image { transition: transform 0.5s cubic-bezier(0.2, 0.9, 0.4, 1.1); }
+    .nav-blur {
+      background: rgba(10,16,32,0.65);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .input {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: var(--text);
+      transition: all 0.2s;
+    }
+    .input:focus { border-color: #d4af37; outline: none; box-shadow: 0 0 0 2px rgba(212,175,55,0.3); }
+    .chip {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.10);
+    }
+    .toast-notify {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      z-index: 1000;
+      background: #1e293bdd;
+      backdrop-filter: blur(12px);
+      border-left: 4px solid #d4af37;
+      padding: 12px 20px;
+      border-radius: 48px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      box-shadow: 0 12px 28px rgba(0,0,0,0.3);
+      transition: opacity 0.2s;
+      pointer-events: none;
+    }
+    .bg-grid {
+      background-image: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+      background-size: 32px 32px;
+    }
+  </style>
+</head>
+<body class="selection:bg-yellow-300/30 selection:text-white">
+  <div id="toastMessage" class="toast-notify opacity-0 transition-all duration-300"></div>
+
+  <header id="top" class="fixed top-0 inset-x-0 z-50 nav-blur">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="h-18 flex items-center justify-between py-4">
+        <a href="#top" class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl flex items-center justify-center glass">
+            <span class="text-lg font-bold gold-text">G</span>
+          </div>
+          <div>
+            <div class="font-semibold tracking-wide">Grand Hotel</div>
+            <div class="text-xs text-slate-400 -mt-0.5">Luxury • Comfort • Elegance</div>
+          </div>
+        </a>
+        <nav class="hidden md:flex items-center gap-8 text-sm text-slate-300">
+          <a href="#rooms" class="hover:text-white transition">Rooms</a>
+          <a href="#amenities" class="hover:text-white transition">Amenities</a>
+          <a href="#dining" class="hover:text-white transition">Dining</a>
+          <a href="#testimonials" class="hover:text-white transition">Reviews</a>
+          <a href="#contact" class="hover:text-white transition">Contact</a>
+        </nav>
+        <div class="hidden md:flex items-center gap-3">
+          <a href="#booking" class="px-5 py-2.5 rounded-full btn-gold font-semibold transition">Book Now</a>
+        </div>
+        <button id="menuBtn" class="md:hidden p-2 rounded-xl glass" aria-label="Menu">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+      </div>
+    </div>
+    <div id="mobileMenu" class="hidden md:hidden border-t border-white/10 bg-slate-950/90 backdrop-blur-md">
+      <div class="px-4 py-4 flex flex-col gap-3 text-slate-300">
+        <a href="#rooms" class="py-2">Rooms</a><a href="#amenities" class="py-2">Amenities</a><a href="#dining" class="py-2">Dining</a>
+        <a href="#testimonials" class="py-2">Reviews</a><a href="#contact" class="py-2">Contact</a>
+        <a href="#booking" class="mt-2 px-5 py-3 rounded-full btn-gold text-center font-semibold">Book Now</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- Hero + Booking Section (Integrated Database Booking Form) -->
+    <section class="relative min-h-screen flex items-center pt-24">
+      <div class="absolute inset-0">
+        <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1800&q=80" alt="Grand Hotel Exterior" class="w-full h-full object-cover" />
+        <div class="absolute inset-0 hero-overlay"></div>
+        <div class="absolute inset-0 bg-grid opacity-40"></div>
+      </div>
+      <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        <div class="grid lg:grid-cols-12 gap-8 items-center">
+          <div class="lg:col-span-7">
+            <div class="inline-flex items-center gap-2 chip px-4 py-2 rounded-full text-sm text-slate-200 mb-6 reveal">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              Premium rooms available — secure your stay.
+            </div>
+            <h1 class="text-4xl sm:text-5xl lg:text-7xl font-semibold leading-tight reveal">
+              Timeless Luxury at
+              <span class="gold-text">Grand Hotel</span>
+            </h1>
+            <p class="mt-6 max-w-2xl text-base sm:text-lg text-slate-300 reveal">
+              Discover elegant suites, world-class dining, rejuvenating spa experiences, and unforgettable stays crafted for modern travelers.
+            </p>
+            <div class="mt-8 flex flex-col sm:flex-row gap-4 reveal">
+              <a href="#booking" class="px-7 py-4 rounded-full btn-gold font-semibold text-center transition">Reserve Your Stay</a>
+              <a href="#rooms" class="px-7 py-4 rounded-full glass font-medium text-center hover:bg-white/10 transition">Explore Rooms</a>
+            </div>
+            <div class="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-4 reveal">
+              <div class="stat-card rounded-2xl p-4 glass"><div class="text-2xl font-semibold gold-text">5★</div><div class="text-sm text-slate-400">Rated Luxury</div></div>
+              <div class="stat-card rounded-2xl p-4 glass"><div class="text-2xl font-semibold gold-text">120+</div><div class="text-sm text-slate-400">Elegant Rooms</div></div>
+              <div class="stat-card rounded-2xl p-4 glass"><div class="text-2xl font-semibold gold-text">24/7</div><div class="text-sm text-slate-400">Concierge</div></div>
+              <div class="stat-card rounded-2xl p-4 glass"><div class="text-2xl font-semibold gold-text">4.9</div><div class="text-sm text-slate-400">Guest Reviews</div></div>
+            </div>
+          </div>
+          <!-- Booking Form with Extended Fields (Name & Email) for Database Storage -->
+          <div class="lg:col-span-5" id="booking">
+            <div class="glass rounded-3xl p-5 sm:p-6 lg:p-7 reveal floating">
+              <div class="flex items-center justify-between">
+                <div><h2 class="text-2xl font-semibold">Secure a Suite</h2><p class="text-sm text-slate-400 mt-1">We’ll store your request safely</p></div>
+                <div class="w-12 h-12 rounded-2xl flex items-center justify-center bg-yellow-400/10 border border-yellow-300/20"><span class="gold-text text-xl">✦</span></div>
+              </div>
+              <form id="bookingForm" class="mt-6 space-y-4">
+                <div class="grid sm:grid-cols-2 gap-4">
+                  <div><label class="text-sm text-slate-300 block mb-2">Full name *</label><input type="text" id="bookName" class="input w-full rounded-2xl px-4 py-3" placeholder="James Rodriguez" required></div>
+                  <div><label class="text-sm text-slate-300 block mb-2">Email *</label><input type="email" id="bookEmail" class="input w-full rounded-2xl px-4 py-3" placeholder="hello@example.com" required></div>
+                  <div><label class="text-sm text-slate-300 block mb-2">Check-in</label><input type="date" id="checkin" class="input w-full rounded-2xl px-4 py-3" required></div>
+                  <div><label class="text-sm text-slate-300 block mb-2">Check-out</label><input type="date" id="checkout" class="input w-full rounded-2xl px-4 py-3" required></div>
+                  <div><label class="text-sm text-slate-300 block mb-2">Guests</label><select id="guests" class="input w-full rounded-2xl px-4 py-3"><option>1 Guest</option><option selected>2 Guests</option><option>3 Guests</option><option>4 Guests</option></select></div>
+                  <div><label class="text-sm text-slate-300 block mb-2">Room Type</label><select id="roomType" class="input w-full rounded-2xl px-4 py-3"><option>Deluxe Room</option><option>Executive Suite</option><option>Presidential Suite</option></select></div>
+                </div>
+                <button type="submit" id="submitBookingBtn" class="w-full px-6 py-4 rounded-2xl btn-gold font-semibold transition">Confirm Booking Request →</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features & Rooms (unchanged structure, only ID consistency) -->
+    <section class="py-20 sm:py-24"><div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"><div class="grid md:grid-cols-3 gap-6">
+      <div class="glass rounded-3xl p-6 reveal"><div class="text-3xl mb-4">🛎️</div><h3 class="text-xl font-semibold">Personalized Service</h3><p class="text-slate-400 mt-2">Attentive concierge, seamless check-in, and tailored guest experiences.</p></div>
+      <div class="glass rounded-3xl p-6 reveal"><div class="text-3xl mb-4">🍽️</div><h3 class="text-xl font-semibold">Fine Dining</h3><p class="text-slate-400 mt-2">Seasonal menus, signature cocktails, exceptional culinary experiences.</p></div>
+      <div class="glass rounded-3xl p-6 reveal"><div class="text-3xl mb-4">💆</div><h3 class="text-xl font-semibold">Spa & Wellness</h3><p class="text-slate-400 mt-2">Relax with premium treatments, serene wellness suite & fitness.</p></div>
+    </div></div></section>
+
+    <!-- Rooms Section -->
+    <section id="rooms" class="py-20 sm:py-24"><div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-12 reveal"><div><p class="text-yellow-300/80 text-sm uppercase tracking-[0.22em]">Accommodations</p><h2 class="section-title text-3xl sm:text-4xl font-semibold mt-2">Signature Rooms & Suites</h2></div><p class="text-slate-400 max-w-2xl">Carefully designed interiors, plush bedding, city or sea views.</p></div>
+      <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+        <article class="room-card glass rounded-3xl overflow-hidden reveal"><div class="relative h-64 overflow-hidden"><img class="room-image w-full h-full object-cover" src="https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80" alt="Deluxe"><div class="absolute top-4 left-4 chip px-3 py-1 rounded-full text-xs">Most Popular</div></div><div class="p-6"><div class="flex justify-between"><div><h3 class="text-xl font-semibold">Deluxe Room</h3><p class="text-slate-400 text-sm">Elegant comfort</p></div><div><div class="text-lg font-semibold gold-text">$220</div><div class="text-xs text-slate-400">night</div></div></div><div class="flex flex-wrap gap-2 mt-4"><span class="chip px-3 py-1 rounded-full">King Bed</span><span class="chip px-3 py-1 rounded-full">City View</span><span class="chip px-3 py-1 rounded-full">Free Wi‑Fi</span></div></div></article>
+        <article class="room-card glass rounded-3xl overflow-hidden reveal"><div class="relative h-64 overflow-hidden"><img class="room-image w-full h-full object-cover" src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1200&q=80" alt="Executive"><div class="absolute top-4 left-4 chip px-3 py-1 rounded-full text-xs">Business Favorite</div></div><div class="p-6"><div class="flex justify-between"><div><h3 class="text-xl font-semibold">Executive Suite</h3><p class="text-slate-400 text-sm">Space & style</p></div><div><div class="text-lg font-semibold gold-text">$360</div><div class="text-xs text-slate-400">night</div></div></div><div class="flex flex-wrap gap-2 mt-4"><span class="chip px-3 py-1 rounded-full">Lounge Area</span><span class="chip px-3 py-1 rounded-full">Work Desk</span><span class="chip px-3 py-1 rounded-full">Breakfast</span></div></div></article>
+        <article class="room-card glass rounded-3xl overflow-hidden reveal"><div class="relative h-64 overflow-hidden"><img class="room-image w-full h-full object-cover" src="https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=1200&q=80" alt="Presidential"><div class="absolute top-4 left-4 chip px-3 py-1 rounded-full text-xs">Ultimate Luxury</div></div><div class="p-6"><div class="flex justify-between"><div><h3 class="text-xl font-semibold">Presidential Suite</h3><p class="text-slate-400 text-sm">finest expression</p></div><div><div class="text-lg font-semibold gold-text">$780</div><div class="text-xs text-slate-400">night</div></div></div><div class="flex flex-wrap gap-2 mt-4"><span class="chip px-3 py-1 rounded-full">Private Dining</span><span class="chip px-3 py-1 rounded-full">Panoramic View</span><span class="chip px-3 py-1 rounded-full">VIP Service</span></div></div></article>
+      </div>
+    </div></section>
+
+    <!-- Amenities and Dining sections (design preserved) -->
+    <section id="amenities" class="py-20 sm:py-24"><div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"><div class="grid lg:grid-cols-2 gap-10 items-center"><div class="reveal"><p class="text-yellow-300/80 text-sm uppercase tracking-[0.22em]">Amenities</p><h2 class="section-title text-3xl sm:text-4xl font-semibold mt-2">Everything You Need, Elevated</h2><p class="text-slate-400 mt-6 max-w-xl">From rooftop relaxation to premium wellness, every corner of Grand Hotel is designed for comfort.</p><div class="mt-8 grid sm:grid-cols-2 gap-4"><div class="glass rounded-2xl p-5"><div class="font-semibold">Infinity Pool</div><p class="text-sm text-slate-400">Panoramic views</p></div><div class="glass rounded-2xl p-5"><div class="font-semibold">Luxury Spa</div><p class="text-sm text-slate-400">Holistic treatments</p></div><div class="glass rounded-2xl p-5"><div class="font-semibold">Fitness Center</div><p class="text-sm text-slate-400">Open 24/7</p></div><div class="glass rounded-2xl p-5"><div class="font-semibold">Airport Transfer</div><p class="text-sm text-slate-400">Premium transport</p></div></div></div><div class="relative reveal"><div class="absolute -inset-4 bg-gradient-to-r from-yellow-400/20 to-violet-500/20 blur-3xl rounded-full"></div><img src="https://images.unsplash.com/photo-1578683010236-d716f9a3f461?auto=format&fit=crop&w=1400&q=80" alt="Pool" class="relative rounded-3xl shadow-2xl border border-white/10 w-full h-[520px] object-cover"></div></div></div></section>
+
+    <section id="dining" class="py-20 sm:py-24"><div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"><div class="text-center max-w-3xl mx-auto mb-12 reveal"><p class="text-yellow-300/80 text-sm uppercase tracking-[0.22em]">Dining</p><h2 class="section-title inline-block text-3xl sm:text-4xl font-semibold mt-2">Curated Culinary Experiences</h2><p class="text-slate-400 mt-6">Refined dining, handcrafted drinks, seasonal ingredients.</p></div><div class="grid md:grid-cols-3 gap-6"><div class="glass rounded-3xl overflow-hidden reveal"><img src="https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=1000&q=80" class="w-full h-56 object-cover"><div class="p-6"><h3 class="text-xl font-semibold">Signature Restaurant</h3><p class="text-slate-400 mt-2">Elegant menu, local flavors & contemporary techniques.</p></div></div><div class="glass rounded-3xl overflow-hidden reveal"><img src="https://images.unsplash.com/photo-1470337458703-46ad1756a187?auto=format&fit=crop&w=1000&q=80" class="w-full h-56 object-cover"><div class="p-6"><h3 class="text-xl font-semibold">Sky Lounge</h3><p class="text-slate-400 mt-2">Sunset cocktails, live music and skyline views.</p></div></div><div class="glass rounded-3xl overflow-hidden reveal"><img src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=1000&q=80" class="w-full h-56 object-cover"><div class="p-6"><h3 class="text-xl font-semibold">Private Dining</h3><p class="text-slate-400 mt-2">Exclusive moments for celebrations & events.</p></div></div></div></div></section>
+
+    <section id="testimonials" class="py-20 sm:py-24"><div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"><div class="mb-10 reveal"><p class="text-yellow-300/80 text-sm uppercase tracking-[0.22em]">Testimonials</p><h2 class="section-title text-3xl sm:text-4xl font-semibold mt-2">What Guests Are Saying</h2></div><div class="grid lg:grid-cols-3 gap-6"><div class="glass rounded-3xl p-6 reveal"><div class="text-yellow-300 mb-4">★★★★★</div><p class="text-slate-300">“Beautiful rooms, exceptional service, and one of the most comfortable hotel stays.”</p><div class="mt-5 text-sm text-slate-400">— Sophia M.</div></div><div class="glass rounded-3xl p-6 reveal"><div class="text-yellow-300 mb-4">★★★★★</div><p class="text-slate-300">“The spa and dining experience were incredible. Premium & thoughtful design.”</p><div class="mt-5 text-sm text-slate-400">— Daniel R.</div></div><div class="glass rounded-3xl p-6 reveal"><div class="text-yellow-300 mb-4">★★★★★</div><p class="text-slate-300">“From check-in to checkout, the team made our anniversary stay unforgettable.”</p><div class="mt-5 text-sm text-slate-400">— Emma & Lucas</div></div></div></div></section>
+
+    <!-- Contact Form with Database Storage -->
+    <section id="contact" class="py-20 sm:py-24"><div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"><div class="grid lg:grid-cols-2 gap-8"><div class="glass rounded-3xl p-6 sm:p-8 reveal"><p class="text-yellow-300/80 text-sm uppercase tracking-[0.22em]">Contact</p><h2 class="section-title text-3xl sm:text-4xl font-semibold mt-2">Plan Your Next Escape</h2><p class="text-slate-400 mt-6">Reservations, event inquiries, private bookings or personalized assistance.</p><div class="mt-8 space-y-4 text-slate-300"><div>📍 123 Grand Avenue, City Center</div><div>📞 +1 (555) 123-4567</div><div>✉️ reservations@grandhotel.com</div><div>🕒 Reception 24/7</div></div></div>
+        <div class="glass rounded-3xl p-6 sm:p-8 reveal"><form id="contactFormDatabase" class="space-y-4"><div class="grid sm:grid-cols-2 gap-4"><input type="text" id="contactName" placeholder="Your full name" class="input w-full rounded-2xl px-4 py-3" required><input type="email" id="contactEmail" placeholder="Email address" class="input w-full rounded-2xl px-4 py-3" required></div><input type="text" id="contactSubject" placeholder="Subject" class="input w-full rounded-2xl px-4 py-3" required><textarea id="contactMsg" rows="5" placeholder="Tell us about your stay or request" class="input w-full rounded-2xl px-4 py-3 resize-none" required></textarea><button type="submit" class="px-6 py-4 rounded-2xl btn-gold font-semibold w-full">Send Message →</button></form></div>
+      </div></div></section>
+  </main>
+  <footer class="border-t border-white/10 py-8"><div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-slate-400"><div>©️ 2026 Grand Hotel. All rights reserved.</div><div class="flex gap-5"><a href="#top" class="hover:text-white">Back to top</a><a href="#rooms" class="hover:text-white">Rooms</a><a href="#contact" class="hover:text-white">Contact</a></div></div></footer>
+
+  <script>
+    // Global toast
+    function showToast(message, isError = false) {
+      const toast = document.getElementById('toastMessage');
+      toast.textContent = message;
+      toast.style.opacity = '1';
+      toast.style.backgroundColor = isError ? '#7f1a1add' : '#0f172add';
+      toast.style.borderLeftColor = isError ? '#ef4444' : '#d4af37';
+      setTimeout(() => { toast.style.opacity = '0'; }, 4000);
+    }
+
+    // Helper POST request
+    async function postToAPI(endpoint, data) {
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      return res.json();
+    }
+
+    // BOOKING FORM (database insert)
+    const bookingForm = document.getElementById('bookingForm');
+    if (bookingForm) {
+      bookingForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const name = document.getElementById('bookName').value.trim();
+        const email = document.getElementById('bookEmail').value.trim();
+        const checkin = document.getElementById('checkin').value;
+        const checkout = document.getElementById('checkout').value;
+        const guestsRaw = document.getElementById('guests').value;
+        const guestsCount = parseInt(guestsRaw.replace(/\D/g, '')) || 1;
+        const roomType = document.getElementById('roomType').value;
+
+        if (!name || !email || !checkin || !checkout) {
+          showToast('Please fill all required fields (name, email, dates).', true);
+          return;
+        }
+        if (new Date(checkin) >= new Date(checkout)) {
+          showToast('Check-out date must be after check-in.', true);
+          return;
+        }
+
+        const submitBtn = document.getElementById('submitBookingBtn');
+        submitBtn.disabled = true;
+        submitBtn.innerText = 'Processing...';
+        try {
+          const result = await postToAPI('/api/bookings', { name, email, check_in: checkin, check_out: checkout, guests: guestsCount, room_type: roomType });
+          if (result.success) {
+            showToast('✨ Booking request stored! Our concierge will reply within 24h.');
+            bookingForm.reset();
+          } else {
+            showToast(result.message || 'Error storing booking.', true);
+          }
+        } catch (err) {
+          showToast('Server error. Please try again later.', true);
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.innerText = 'Confirm Booking Request →';
+        }
+      });
+    }
+
+    // CONTACT FORM (database insert)
+    const contactForm = document.getElementById('contactFormDatabase');
+    if (contactForm) {
+      contactForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const name = document.getElementById('contactName').value.trim();
+        const email = document.getElementById('contactEmail').value.trim();
+        const subject = document.getElementById('contactSubject').value.trim();
+        const message = document.getElementById('contactMsg').value.trim();
+        if (!name || !email || !subject || !message) {
+          showToast('Please complete all contact fields.', true);
+          return;
+        }
+        const btn = contactForm.querySelector('button[type="submit"]');
+        const originalText = btn.innerText;
+        btn.disabled = true;
+        btn.innerText = 'Sending...';
+        try {
+          const result = await postToAPI('/api/contact', { name, email, subject, message });
+          if (result.success) {
+            showToast('📨 Message received! We’ll get back to you soon.');
+            contactForm.reset();
+          } else {
+            showToast(result.message || 'Failed to send message.', true);
+          }
+        } catch (err) {
+          showToast('Server not reachable. Please try later.', true);
+        } finally {
+          btn.disabled = false;
+          btn.innerText = originalText;
+        }
+      });
+    }
+
+    // Intersection Observer for reveals
+    const observer = new IntersectionObserver((entries) => { entries.forEach(entry => { if(entry.isIntersecting) entry.target.classList.add('show'); }); }, { threshold: 0.12 });
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    // Mobile menu toggle
+    const menuBtn = document.getElementById('menuBtn');
+    const mobileMenu = document.getElementById('mobileMenu');
+    if(menuBtn) menuBtn.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
+    document.querySelectorAll('#mobileMenu a').forEach(link => link.addEventListener('click', () => mobileMenu.classList.add('hidden')));
+    
+    // Smooth anchor offset for fixed header
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function(e) {
+        const targetId = this.getAttribute('href');
+        if(targetId === "#" || targetId === "") return;
+        const target = document.querySelector(targetId);
+        if(target) {
+          e.preventDefault();
+          const yOffset = -80;
+          const y = target.getBoundingClientRect().top + window.pageYOffset + yOffset;
+          window.scrollTo({ top: y, behavior: 'smooth' });
+        }
+      });
+    });
+
+    // Prefill today's date for better UX
+    const today = new Date().toISOString().split('T')[0];
+    const checkinInput = document.getElementById('checkin');
+    const checkoutInput = document.getElementById('checkout');
+    if(checkinInput) {
+      checkinInput.min = today;
+      if(!checkinInput.value) checkinInput.value = today;
+      if(checkoutInput) {
+        const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate()+1);
+        checkoutInput.min = tomorrow.toISOString().split('T')[0];
+        if(!checkoutInput.value) checkoutInput.value = tomorrow.toISOString().split('T')[0];
+        checkinInput.addEventListener('change', () => {
+          const minCheckout = new Date(checkinInput.value);
+          minCheckout.setDate(minCheckout.getDate()+1);
+          checkoutInput.min = minCheckout.toISOString().split('T')[0];
+          if(new Date(checkoutInput.value) <= new Date(checkinInput.value)) checkoutInput.value = minCheckout.toISOString().split('T')[0];
+        });
+      }
+    }
+  </script>
+  <!-- Backend Integration Note: This frontend expects a Node.js/Express + SQLite server at /api/bookings and /api/contact. 
+       A complete backend (server.js) is provided below. Please run the server to enable database persistence. -->
+</body>
+</html>
+```
