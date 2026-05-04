@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Aspire Resort</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: #0b0b0b;
+    color: white;
+}
+
+/* NAVBAR */
+.nav {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px 50px;
+    position: absolute;
+    width: 100%;
+    z-index: 10;
+}
+
+.nav h2 {
+    color: #d4a373;
+}
+
+.nav ul {
+    display: flex;
+    gap: 20px;
+    list-style: none;
+}
+
+.nav li {
+    cursor: pointer;
+}
+
+.nav button {
+    background: #d4a373;
+    border: none;
+    padding: 10px 15px;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+/* HERO */
+.hero {
+    height: 100vh;
+    background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.7)),
+    url("https://images.unsplash.com/photo-1566073771259-6a8506099945") center/cover;
+    display: flex;
+    align-items: center;
+    padding: 50px;
+}
+
+.hero-content {
+    max-width: 500px;
+}
+
+.hero h1 {
+    font-size: 50px;
+}
+
+.hero button {
+    margin-top: 20px;
+    padding: 12px 20px;
+    background: #d4a373;
+    border: none;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+/* INFO BAR */
+.info {
+    display: flex;
+    justify-content: space-around;
+    background: rgba(255,255,255,0.05);
+    padding: 20px;
+}
+
+/* ROOMS */
+.rooms {
+    padding: 50px;
+    display: flex;
+    gap: 20px;
+}
+
+.room {
+    background: #1a1a1a;
+    padding: 20px;
+    border-radius: 10px;
+    flex: 1;
+    transition: 0.3s;
+}
+
+.room:hover {
+    transform: translateY(-5px);
+}
+
+.room img {
+    width: 100%;
+    border-radius: 10px;
+}
+
+.room button {
+    background: #d4a373;
+    border: none;
+    padding: 10px;
+    color: white;
+    width: 100%;
+    margin-top: 10px;
+    cursor: pointer;
+}
+
+/* LUXURY */
+.luxury {
+    display: flex;
+    padding: 50px;
+    gap: 30px;
+}
+
+.luxury img {
+    width: 100%;
+    border-radius: 10px;
+}
+
+.luxury button {
+    margin-top: 15px;
+    padding: 10px 15px;
+    background: #d4a373;
+    border: none;
+    color: white;
+    cursor: pointer;
+}
+
+/* RESPONSIVE */
+@media(max-width: 768px) {
+    .rooms, .luxury {
+        flex-direction: column;
+    }
+}
+</style>
+
+</head>
+
+<body>
+
+<!-- NAV -->
+<div class="nav">
+    <h2>Aspire Resort</h2>
+    <ul>
+        <li onclick="goSection('hero')">Home</li>
+        <li onclick="goSection('rooms')">Rooms</li>
+        <li onclick="goSection('luxury')">Contact</li>
+    </ul>
+    <button onclick="bookNow()">Book Now</button>
+</div>
+
+<!-- HERO -->
+<div id="hero" class="hero">
+    <div class="hero-content">
+        <h1>Experience Five-Star Luxury</h1>
+        <p>Unmatched comfort and elegance tailored to perfection</p>
+        <button onclick="bookNow()">Book Your Stay</button>
+    </div>
+</div>
+
+<!-- INFO -->
+<div class="info">
+    <div>🕒 Check-in: 3PM</div>
+    <div>📍Hargeisa, Somaliland</div>
+    <div>📞 +252 63666181</div>
+</div>
+
+<!-- ROOMS -->
+<div id="rooms" class="rooms">
+
+    <div class="room">
+        <img src="https://images.unsplash.com/photo-1582719478250-c89cae4dc85b">
+        <h3>Superior Suite</h3>
+        <p>Luxury and comfort room</p>
+        <button onclick="selectRoom('Superior Suite')">From $189/night</button>
+    </div>
+
+    <div class="room">
+        <img src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2">
+        <h3>Executive Room</h3>
+        <p>Modern elegant design</p>
+        <button onclick="selectRoom('Executive Room')">From $229/night</button>
+    </div>
+
+    <div class="room">
+        <img src="https://images.unsplash.com/photo-1566665797739-1674de7a421a">
+        <h3>Grand Suite</h3>
+        <p>Premium luxury experience</p>
+        <button onclick="selectRoom('Grand Suite')">From $500/night</button>
+    </div>
+
+</div>
+
+<!-- LUXURY -->
+<div id="luxury" class="luxury">
+
+    <div>
+        <h2>Discover Refined Luxury</h2>
+        <p>
+        Enjoy elegant rooms, ocean views, and top-class service.
+        </p>
+        <button onclick="explore()">Explore More</button>
+    </div>
+
+    <div>
+        <img src="https://images.unsplash.com/photo-1505691938895-1758d7feb511">
+    </div>
+
+</div>
+
+<!-- JAVASCRIPT -->
+<script>
+function bookNow() {
+    alert("Booking system coming soon!");
+}
+
+function selectRoom(room) {
+    alert("You selected: " + room);
+}
+
+function explore() {
+    alert("More luxury features coming soon!");
+}
+
+function goSection(id) {
+    document.getElementById(id).scrollIntoView({behavior: "smooth"});
+}
+</script>
+
+</body>
+</html>
